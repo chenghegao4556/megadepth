@@ -28,6 +28,7 @@ run convert.py
 python3 convert.py
 ```
 note your pytorch should also be 1.1.0
+
 put converted torch jit script in build or data
 ### step 4
 build c++ version mega depth
