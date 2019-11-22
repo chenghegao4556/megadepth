@@ -38,20 +38,36 @@ private:
     TimePoint t1, t2;
 };
 
+bool LoadYaml(const std::string& file_name, float& fx, float& fy, float& cx, float& cy)
+{
+    cv::FileStorage fs(file_name.c_str(), cv::FileStorage::READ);
+    if(!fs.isOpened()) throw std::string("Could not open file ") + file_name;
+    cv::FileNode fn = fs["intrinsic"];
+    fx = fn["fx"];
+    fy = fn["fy"];
+    cx = fn["cx"];
+    cy = fn["cy"];
+
+    std::cout<<"successfully load camera intrinsic!"<<std::endl;
+    std::cout<<"fx = "<<fx<<std::endl;
+    std::cout<<"fy = "<<fy<<std::endl;
+    std::cout<<"cx = "<<cx<<std::endl;
+    std::cout<<"cy = "<<cy<<std::endl;
+
+    fs.release();
+    return true;
+}
+
 int main(int argc,char* argv[])
 {
     ///! check input parameters
-    if (argc != 3)
+    if (argc != 4)
     {
         std::cout<<"wrong parameters"<<std::endl;
         return 1;
     }
-
-    const float cx = 690;
-    const float cy = 230;
-    const float fx = 980;
-    const float fy = 980;
-
+    float fx, fy, cx, cy;
+    LoadYaml(argv[3], fx, fy, cx, cy);
     Timer timer;
     cv::VideoCapture video_capture;
     MegaDepth::MegaDepthEstimator mega_depth_estimator(argv[1]);

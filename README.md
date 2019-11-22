@@ -35,6 +35,6 @@ build c++ version mega depth
 
 run
 ```
-./megedepthclient ../data/mega_depth_net.pt ../data/kitti.mp4
+./megedepthclient ../data/mega_depth_net.pt ../data/kitti.mp4 ../data/kitti.yml
 ```
 enjoy
