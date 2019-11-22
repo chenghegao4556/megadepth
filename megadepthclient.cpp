@@ -1,6 +1,7 @@
 //
 // Created by chenghe on 11/22/19.
 //
+#include <cv.hpp>
 #include <chrono>
 #include <sstream>
 #include <pcl/visualization/cloud_viewer.h>
@@ -38,24 +39,71 @@ private:
     TimePoint t1, t2;
 };
 
-bool LoadYaml(const std::string& file_name, float& fx, float& fy, float& cx, float& cy)
+bool LoadYaml(const std::string& file_name, cv::Mat& intrinsic, cv::Mat& distortion, cv::Size& size)
 {
+    float fx, fy, cx, cy;
+    float d0, d1, d2, d3, d4;
+    int height, width;
+
     cv::FileStorage fs(file_name.c_str(), cv::FileStorage::READ);
     if(!fs.isOpened()) throw std::string("Could not open file ") + file_name;
     cv::FileNode fn = fs["intrinsic"];
-    fx = fn["fx"];
-    fy = fn["fy"];
-    cx = fn["cx"];
-    cy = fn["cy"];
+    fx = fn["fx"]; fy = fn["fy"]; cx = fn["cx"]; cy = fn["cy"];
+    d0 = fn["d0"]; d1 = fn["d1"]; d2 = fn["d2"]; d3 = fn["d3"]; d4 = fn["d4"];
+    height = fn["height"]; width = fn["width"];
+    size = cv::Size(width, height);
+
+    intrinsic = ( cv::Mat_<float> ( 3,3 ) << fx, 0, cx, 0, fy, cy, 0, 0, 1 );
+    distortion = ( cv::Mat_<float> ( 1,5 ) << d0, d1, d2, d3, d4);
 
     std::cout<<"successfully load camera intrinsic!"<<std::endl;
-    std::cout<<"fx = "<<fx<<std::endl;
-    std::cout<<"fy = "<<fy<<std::endl;
-    std::cout<<"cx = "<<cx<<std::endl;
-    std::cout<<"cy = "<<cy<<std::endl;
-
+    std::cout<<" fx = "<<fx<<" fy = "<<fy<<" cx = "<<cx<<" cy = "<<cy<<std::endl;
+    std::cout<<" d0 = "<<d0<<" d1 = "<<d1<<" d2 = "<<d2<<" d3 = "<<d3<<" d4 = "<<d4<<std::endl;
+    std::cout<<" height = "<<height<<" width = "<<width<<std::endl;
     fs.release();
     return true;
+}
+
+bool GetUndistortionMaps(const cv::Mat& intrinsic, const cv::Mat& distortion, const cv::Size& image_size,
+        cv::Mat& new_intrinsic, cv::Mat& map1, cv::Mat& map2)
+{
+    new_intrinsic = cv::getOptimalNewCameraMatrix(intrinsic, distortion, image_size, 0, image_size, 0);
+    cv::initUndistortRectifyMap(intrinsic, distortion, cv::Mat(), new_intrinsic, image_size, CV_16SC2, map1, map2);
+}
+
+PointCloud::Ptr ConstructPointCloud(const cv::Mat& color_image, const cv::Mat& inverse_depth_map, const cv::Mat& intrinsic)
+{
+
+    float fx, fy, cx, cy;
+    fx = intrinsic.at<float>(0, 0);
+    fy = intrinsic.at<float>(1, 1);
+    cx = intrinsic.at<float>(0, 2);
+    cy = intrinsic.at<float>(1, 2);
+
+    ///! convert depth image to point cloud
+    PointCloud::Ptr point_cloud( new PointCloud );
+    for(size_t row = 0; row < static_cast<size_t >(inverse_depth_map.rows); ++row)
+    {
+        for(size_t col = 0; col < static_cast<size_t>(inverse_depth_map.cols); ++col)
+        {
+            PointT point;
+            float inv_d = inverse_depth_map.at<float>(row, col);
+            float depth = 1.0f / inv_d;
+
+            point.x =  ((static_cast<float>(col) - cx) / fx) * depth;
+            point.y = -((static_cast<float>(row) - cy) / fy) * depth;
+            point.z = -depth;
+
+            cv::Vec3b color = color_image.at<cv::Vec3b>(row, col);
+            point.b = color(0);
+            point.g = color(1);
+            point.r = color(2);
+
+            point_cloud->points.push_back(point);
+        }
+    }
+
+    return point_cloud;
 }
 
 int main(int argc,char* argv[])
@@ -66,12 +114,21 @@ int main(int argc,char* argv[])
         std::cout<<"wrong parameters"<<std::endl;
         return 1;
     }
-    float fx, fy, cx, cy;
-    LoadYaml(argv[3], fx, fy, cx, cy);
+
+    ///!load camera parameters and undistion maps
+    cv::Mat intrinsic, distortion, new_intrinsic, map1, map2;
+    cv::Size image_size;
+    LoadYaml(argv[3], intrinsic, distortion, image_size);
+    GetUndistortionMaps(intrinsic, distortion, image_size, new_intrinsic, map1, map2);
+
+
+    ///! some core data structures
     Timer timer;
     cv::VideoCapture video_capture;
     MegaDepth::MegaDepthEstimator mega_depth_estimator(argv[1]);
     video_capture.open(argv[2]);
+    cv::Mat frame;
+    bool stop(false);
 
     if(!video_capture.isOpened())
 
@@ -80,10 +137,9 @@ int main(int argc,char* argv[])
         return 1;
     }
 
+    ///! data structure for visualization
     cv::namedWindow("depth",CV_WINDOW_NORMAL);
     pcl::visualization::CloudViewer viewer("cloud");
-    cv::Mat frame;
-    bool stop(false);
 
     while(!stop)
     {
@@ -91,36 +147,15 @@ int main(int argc,char* argv[])
         {
             break;
         }
+        cv::remap(frame, frame, map1, map2, cv::INTER_LINEAR);
         ///! estimate depth
         timer.Tic();
         cv::Mat inverse_depth_map = mega_depth_estimator.Compute(frame);
         timer.Toc();
 
-        ///! convert depth image to point cloud
-        PointCloud::Ptr point_cloud( new PointCloud );
-        for(size_t row = 0; row < static_cast<size_t >(inverse_depth_map.rows); ++row)
-        {
-            for(size_t col = 0; col < static_cast<size_t>(inverse_depth_map.cols); ++col)
-            {
-                PointT point;
-                float inv_d = inverse_depth_map.at<float>(row, col);
-                float depth = 1.0f / inv_d;
-
-                point.x =  ((static_cast<float>(col) - cx) / fx) * depth;
-                point.y = -((static_cast<float>(row) - cy) / fy) * depth;
-                point.z = -depth;
-
-                cv::Vec3b color = frame.at<cv::Vec3b>(row, col);
-                point.b = color(0);
-                point.g = color(1);
-                point.r = color(2);
-
-                point_cloud->points.push_back(point);
-            }
-        }
-
+        ///! get point cloud
+        PointCloud::Ptr point_cloud = ConstructPointCloud(frame, inverse_depth_map, new_intrinsic);
         ///! visualize point cloud and depth image
-
         ///! apply color map
         cv::Mat color_depth_map;
         color_depth_map = inverse_depth_map * 255;
