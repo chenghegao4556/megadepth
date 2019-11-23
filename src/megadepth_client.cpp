@@ -60,8 +60,9 @@ namespace MegaDepth
         pangolin::GlTexture image_texture = pangolin::GlTexture(image_width_, image_height_,GL_RGB,false,0,GL_BGR,GL_UNSIGNED_BYTE);;
 
         pangolin::CreatePanel("menu").SetBounds(0.8,1,0.0,0.15);
-        pangolin::Var<bool> pause("menu.Pause", false, false);
         pangolin::Var<std::string> fps("menu.FPS", " ");
+        pangolin::Var<bool> pause("menu.Pause", false, true);
+        pangolin::Var<bool> color("menu.Color", true, true);
 
         ///! initialize parameters for render
         float fx, fy, cx, cy;
@@ -79,19 +80,7 @@ namespace MegaDepth
                 color_image = GetColorImage().clone();
                 inverse_depth_map = GetInverseDepth().clone();
                 fps = GetText();
-                if(pangolin::Pushed(pause))
-                {
-                    if(!IsPause())
-                    {
-                        std::cout << "-------->System Pause" << std::endl;
-                        SetPause();
-                    }
-                    else
-                    {
-                        std::cout << "-------->System UnPause" << std::endl;
-                        ResetPause();
-                    }
-                }
+                pause_ = pause;
                 UnLock();
             }
 
@@ -102,7 +91,7 @@ namespace MegaDepth
             }
 
             ///! colorize inverse depth map
-            cv::Mat color_depth_map;
+            cv::Mat color_depth_map, point_color_mat;
             color_depth_map = inverse_depth_map * 255;
             color_depth_map.convertTo(color_depth_map, CV_8U);
             cv::applyColorMap(color_depth_map, color_depth_map, cv::COLORMAP_JET);
@@ -112,6 +101,14 @@ namespace MegaDepth
             d_cam.Activate(s_cam);
             glPointSize(1);
             glBegin(GL_POINTS);
+            if(color)
+            {
+                point_color_mat = color_image;
+            }
+            else
+            {
+                point_color_mat = color_depth_map;
+            }
             for(size_t row = 0; row < static_cast<size_t >(inverse_depth_map.rows); ++row)
             {
                 for(size_t col = 0; col < static_cast<size_t>(inverse_depth_map.cols); ++col)
@@ -124,7 +121,7 @@ namespace MegaDepth
                     y = ((static_cast<float>(row) - cy) / fy) * depth;
                     z = depth;
 
-                    cv::Vec3b color = color_image.at<cv::Vec3b>(row, col);
+                    cv::Vec3b color = point_color_mat.at<cv::Vec3b>(row, col);
                     glColor3d(static_cast<float>(color(2))/255,
                               static_cast<float>(color(1))/255,
                               static_cast<float>(color(0))/255);
@@ -156,6 +153,7 @@ namespace MegaDepth
         MegaDepth::Timer timer;
         while(IsRunning())
         {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             while(IsPause())
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
