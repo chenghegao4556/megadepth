@@ -62,6 +62,7 @@ namespace MegaDepth
         pangolin::CreatePanel("menu").SetBounds(0.8,1,0.0,0.15);
         pangolin::Var<bool> pause("menu.Pause", false, false);
         pangolin::Var<std::string> fps("menu.FPS", " ");
+
         ///! initialize parameters for render
         float fx, fy, cx, cy;
         GetCameraParameters(fx, fy, cx, cy);
@@ -164,25 +165,24 @@ namespace MegaDepth
                 }
             }
             cv::Mat frame;
-            if(!video_capture_.read(frame))
+            if(video_capture_.read(frame))
             {
-                break;
-            }
-            frame = camera_->Undistort(frame);
-            ///! estimate depth
-            timer.Tic();
-            cv::Mat inverse_depth_map = estimator_->Compute(frame);
-            timer.Toc();
+                frame = camera_->Undistort(frame);
+                ///! estimate depth
+                timer.Tic();
+                cv::Mat inverse_depth_map = estimator_->Compute(frame);
+                timer.Toc();
 
-            ///!show fps of mega depth
-            std::stringstream fps;
-            fps<<setiosflags(std::ios::fixed)<<std::setprecision(2)<<(1.0 / timer.Duration());
-            if(TryLock())
-            {
-                SetText(fps.str());
-                SetColorImage(frame);
-                SetInverseDepth(inverse_depth_map);
-                UnLock();
+                ///!show fps of mega depth
+                std::stringstream fps;
+                fps<<setiosflags(std::ios::fixed)<<std::setprecision(2)<<(1.0 / timer.Duration());
+                if(TryLock())
+                {
+                    SetText(fps.str());
+                    SetColorImage(frame);
+                    SetInverseDepth(inverse_depth_map);
+                    UnLock();
+                }
             }
         }
         video_capture_.release();

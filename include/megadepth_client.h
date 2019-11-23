@@ -1,7 +1,6 @@
 //
 // Created by chenghe on 11/23/19.
 //
-
 #ifndef MEGADEPTH_MEGADEPTH_CLIENT_H
 #define MEGADEPTH_MEGADEPTH_CLIENT_H
 #include <pangolin/pangolin.h>
