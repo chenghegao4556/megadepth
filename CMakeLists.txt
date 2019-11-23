@@ -19,9 +19,9 @@ include_directories(
 include_directories(${PROJECT_SOURCE_DIR}/include)
 add_library(
         ${PROJECT_NAME} SHARED
-        src/megadepthestimator.cpp
-        src/visualizer.cpp
+        src/megadepth_estimator.cpp
         src/camera.cpp
+        src/megadepth_client.cpp
 )
 
 target_link_libraries(
@@ -32,5 +32,5 @@ target_link_libraries(
 )
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
 
-add_executable(megedepthclient megadepthclient.cpp)
-target_link_libraries(megedepthclient ${PROJECT_NAME})
+add_executable(megadepthclient client.cpp)
+target_link_libraries(megadepthclient ${PROJECT_NAME})

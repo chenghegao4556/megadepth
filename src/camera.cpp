@@ -31,10 +31,7 @@ namespace MegaDepth
         cv::Mat intrinsic = ( cv::Mat_<float> ( 3,3 ) << fx, 0, cx, 0, fy, cy, 0, 0, 1 );
         cv::Mat distortion = ( cv::Mat_<float> ( 1,5 ) << d0, d1, d2, d3, d4);
 
-        std::cout<<"successfully load camera intrinsic!"<<std::endl;
-        std::cout<<" fx = "<<fx<<" fy = "<<fy<<" cx = "<<cx<<" cy = "<<cy<<std::endl;
-        std::cout<<" d0 = "<<d0<<" d1 = "<<d1<<" d2 = "<<d2<<" d3 = "<<d3<<" d4 = "<<d4<<std::endl;
-        std::cout<<" height = "<<height<<" width = "<<width<<std::endl;
+        std::cout<<"-------->Successfully load camera intrinsic!"<<std::endl;
         fs.release();
 
         intrinsic_ = cv::getOptimalNewCameraMatrix(intrinsic, distortion, image_size_, 0, image_size_, 0);
