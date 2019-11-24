@@ -83,7 +83,6 @@ namespace MegaDepth
         ///! temp buffs
         cv::Mat inverse_depth_map;
         cv::Mat color_image;
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         while(!pangolin::ShouldQuit())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
