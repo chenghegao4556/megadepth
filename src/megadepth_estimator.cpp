@@ -15,7 +15,7 @@ namespace MegaDepth
     {
         module_ = torch::jit::load(weight_path);
         module_->to(at::kCUDA);
-        std::cout<<"-------->Success load MegaDepth network!"<<std::endl;
+        std::cout<<"-------->Successfully load MegaDepth network!"<<std::endl;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////

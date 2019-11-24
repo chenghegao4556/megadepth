@@ -41,18 +41,27 @@ namespace MegaDepth
         pangolin::BindToContext("MegaDepth Cloud Viewer");
         glEnable(GL_DEPTH_TEST);
         float scale = static_cast<float>(image_width_) / static_cast<float>(image_height_);
+        ///! projection view
         pangolin::OpenGlRenderState s_cam = (pangolin::OpenGlRenderState(
                 pangolin::ProjectionMatrix(1024, 768, 500, 500, 512, 389, 0.1, 1000),
                 ///! camera position, model position, upper vector
                 pangolin::ModelViewLookAt( 0, 0,-2, 0, 0, 0, pangolin::AxisNegY)));
         const pangolin::OpenGlMatrix original_camera_view = s_cam.GetModelViewMatrix();
+
+        ///! for 3d interaction
         pangolin::Handler3D handler(s_cam);
+
+        ///! display point cloud
         pangolin::View& d_cam = pangolin::CreateDisplay()
                 .SetBounds(1/3, 1, 0.0, 1.0)
                 .SetHandler(&handler);
+
+        ///! display color image
         pangolin::View& rgb_image = pangolin::Display("color_image")
                 .SetBounds(0.0, 0.15, 0.0, 0.4, scale)
                 .SetLock(pangolin::LockLeft, pangolin::LockBottom);
+
+        ///! display depth image
         pangolin::View& depth_image = pangolin::Display("depth_image")
                 .SetBounds(0.0, 0.15, 0.4, 0.8, scale)
                 .SetLock(pangolin::LockLeft, pangolin::LockBottom);
@@ -66,6 +75,7 @@ namespace MegaDepth
         pangolin::Var<bool> reset("menu.Reset", false, false);
         pangolin::Var<bool> pause("menu.Pause", false, true);
         pangolin::Var<bool> color("menu.Color", true,  true);
+
         ///! initialize parameters for render
         float fx, fy, cx, cy;
         GetCameraParameters(fx, fy, cx, cy);
