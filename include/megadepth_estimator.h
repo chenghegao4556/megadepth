@@ -32,7 +32,7 @@ namespace MegaDepth
          * @param width
          */
         MegaDepthEstimator(const std::string& weight_path,
-                           const int height = 384, const int width = 512);
+                           const int height = 256, const int width = 512);
 
         /**
          * @brief compute depth of input image

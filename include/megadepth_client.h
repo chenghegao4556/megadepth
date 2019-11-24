@@ -28,7 +28,8 @@ namespace MegaDepth
          * @param[in] camera_path
          */
         MegaDepthClient(const std::string& weight_path, const std::string& video_path,
-                        const std::string& camera_path);
+                        const std::string& camera_path, const int inference_height = 256,
+                        const int inference_width = 256);
 
         /**
          * @brief start two threads

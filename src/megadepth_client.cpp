@@ -8,9 +8,11 @@ namespace MegaDepth
     //////////////////////////////////////////////////////////////////////////////////////////////
     MegaDepthClient::
     MegaDepthClient(const std::string& weight_path, const std::string& video_path,
-                    const std::string& camera_path):
+                    const std::string& camera_path, const int inference_height,
+                    const int inference_width):
                     camera_     (new MegaDepth::Camera(camera_path)),
-                    estimator_  (new MegaDepth::MegaDepthEstimator(weight_path))
+                    estimator_  (new MegaDepth::MegaDepthEstimator(weight_path, inference_height,
+                            inference_width))
     {
         ///! initialize video capture
         video_capture_.open(video_path);
