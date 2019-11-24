@@ -1,6 +1,6 @@
 ## C++ version MegaDepth with Point Cloud Visualization
 
-![image](https://https://github.com/chenghegao4556/megadepth/blob/master/demo.gif)
+![image](https://github.com/chenghegao4556/megadepth/blob/master/demo.gif)
 ### step 1:
 compile libtorch
 ```
