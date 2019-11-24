@@ -1,34 +1,64 @@
 //
 // Created by chenghe on 11/23/19.
 //
+#include "cxxopts.hpp"
 #include <megadepth_client.h>
+
+cxxopts::ParseResult
+parse(int argc, char* argv[])
+{
+    try
+    {
+        cxxopts::Options options(argv[0], " - example command line options");
+        options
+                .positional_help("[optional args]")
+                .show_positional_help();
+
+        bool apple = false;
+
+        options
+                .allow_unrecognised_options()
+                .add_options()
+                        ("n, network_path", "MegaDepth weight path", cxxopts::value<std::string>())
+                        ("v, video",  "test video path", cxxopts::value<std::string>())
+                        ("y, yaml",   "camera intrinsic file", cxxopts::value<std::string>())
+                        ("h, height", "inference height", cxxopts::value<int>()->default_value("256"))
+                        ("w, width",  "inference heigh",  cxxopts::value<int>()->default_value("512"))
+                        ("help", "Print help");
+
+        auto result = options.parse(argc, argv);
+
+        if (result.count("help"))
+        {
+            std::cout << options.help() << std::endl;
+            exit(0);
+        }
+        std::cout<<"**weight path :"<<result["n"].as<std::string>()<<std::endl;
+        std::cout<<"**video  path :"<<result["v"].as<std::string>()<<std::endl;
+        std::cout<<"**yaml   path :"<<result["y"].as<std::string>()<<std::endl;
+        std::cout<<"**inference height :"<<result["h"].as<int>()<<std::endl;
+        std::cout<<"**inference width  :"<<result["w"].as<int>()<<std::endl;
+
+
+        return result;
+
+    } catch (const cxxopts::OptionException& e)
+    {
+        std::cout << "error parsing options: " << e.what() << std::endl;
+        exit(1);
+    }
+}
+
 int main(int argc,char* argv[])
 {
-    ///! check input parameters
-    if (argc == 6 || argc == 4)
-    {
-        int inference_height, inference_width;
-        if (argc == 6)
-        {
 
-            std::istringstream ( argv[4] ) >> inference_height;
-            std::istringstream ( argv[5] ) >> inference_width;
-
-
-        } else
-        {
-            inference_height = 256,
-            inference_width = 512;
-        }
-        MegaDepth::MegaDepthClient client(argv[1], argv[2], argv[3],
-                                          inference_height, inference_width);
-        client.Start();
-    }
-    else
-    {
-        std::cout<<"wrong parameters"<<std::endl;
-        return 1;
-    }
+   auto result = parse(argc, argv);
+   MegaDepth::MegaDepthClient client(result["n"].as<std::string>(),
+                                     result["v"].as<std::string>(),
+                                     result["y"].as<std::string>(),
+                                     result["h"].as<int>(),
+                                     result["w"].as<int>());
+   client.Start();
 
 
     return 0;
