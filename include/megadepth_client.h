@@ -44,13 +44,6 @@ namespace MegaDepth
     protected:
 
         /**
-         * @brief return should quit?
-         */
-        bool ShouldQuit() const
-        {
-            return pangolin::ShouldQuit();
-        }
-        /**
          * @brief render point cloud and image
          */
         void RenderLoop();
@@ -69,14 +62,12 @@ namespace MegaDepth
             return pause_;
         }
 
-        void SetPause()
+        /**
+         * @brief set status
+         */
+        void SetStatus(const bool status)
         {
-            pause_ = true;
-        }
-
-        void ResetPause()
-        {
-            pause_ = false;
+            pause_ = status;
         }
 
         /**
@@ -84,7 +75,7 @@ namespace MegaDepth
         */
         bool IsRunning() const
         {
-            return runing_;
+            return running_;
         };
 
         /**
@@ -176,7 +167,7 @@ namespace MegaDepth
 
         ///! control
         std::mutex mutex_;
-        bool runing_;
+        bool running_;
         bool pause_;
 
         int image_height_;
