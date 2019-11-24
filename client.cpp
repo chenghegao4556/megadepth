@@ -19,9 +19,12 @@ parse(int argc, char* argv[])
         options
                 .allow_unrecognised_options()
                 .add_options()
-                        ("n, network_path", "MegaDepth weight path", cxxopts::value<std::string>())
-                        ("v, video",  "test video path", cxxopts::value<std::string>())
-                        ("y, yaml",   "camera intrinsic file", cxxopts::value<std::string>())
+                        ("n, network_path", "MegaDepth weight path",
+                                cxxopts::value<std::string>()->default_value("../data/mega_depth_net.pt"))
+                        ("v, video",  "test video path",
+                                cxxopts::value<std::string>()->default_value("../data/kitti.mp4"))
+                        ("y, yaml",   "camera intrinsic file",
+                                cxxopts::value<std::string>()->default_value("../data/kitti.yml"))
                         ("h, height", "inference height", cxxopts::value<int>()->default_value("256"))
                         ("w, width",  "inference heigh",  cxxopts::value<int>()->default_value("512"))
                         ("help", "Print help");
