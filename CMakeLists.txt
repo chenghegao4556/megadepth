@@ -10,7 +10,6 @@ find_package(Torch REQUIRED)
 find_package(Pangolin REQUIRED)
 
 include_directories(
-        "/usr/include/eigen3"
         ${OpenCV_INCLUDE_DIRS}
         ${Pangolin_INCLUDE_DIRS}
         ${TORCH_INCLUDE_DIRS}
