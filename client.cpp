@@ -9,12 +9,10 @@ parse(int argc, char* argv[])
 {
     try
     {
-        cxxopts::Options options(argv[0], " - example command line options");
+        cxxopts::Options options(argv[0], " - MegaDepth Client Options");
         options
                 .positional_help("[optional args]")
                 .show_positional_help();
-
-        bool apple = false;
 
         options
                 .allow_unrecognised_options()
@@ -26,7 +24,7 @@ parse(int argc, char* argv[])
                         ("y, yaml",   "camera intrinsic file",
                                 cxxopts::value<std::string>()->default_value("../data/kitti.yml"))
                         ("h, height", "inference height", cxxopts::value<int>()->default_value("256"))
-                        ("w, width",  "inference heigh",  cxxopts::value<int>()->default_value("512"))
+                        ("w, width",  "inference width",  cxxopts::value<int>()->default_value("512"))
                         ("help", "Print help");
 
         auto result = options.parse(argc, argv);
