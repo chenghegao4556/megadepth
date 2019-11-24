@@ -83,7 +83,7 @@ namespace MegaDepth
         ///! temp buffs
         cv::Mat inverse_depth_map;
         cv::Mat color_image;
-
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         while(!pangolin::ShouldQuit())
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -107,7 +107,7 @@ namespace MegaDepth
 
             ///! colorize inverse depth map
             cv::Mat color_depth_map, point_color_mat;
-            color_depth_map = inverse_depth_map * 255;
+            color_depth_map = 255 - inverse_depth_map * 255;
             color_depth_map.convertTo(color_depth_map, CV_8U);
             cv::applyColorMap(color_depth_map, color_depth_map, cv::COLORMAP_JET);
 
